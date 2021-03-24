@@ -1,0 +1,10 @@
+version: "3"
+services:
+  plantuml:
+    build: .
+    volumes:
+      - type: bind
+        source: .
+        target: /app
+    env_file: .env
+    user: "${UID}:${GID}"
