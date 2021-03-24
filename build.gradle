@@ -1,0 +1,49 @@
+plugins {
+  id 'java'
+}
+
+repositories {
+  jcenter()
+}
+
+dependencies {
+  implementation group: 'net.sourceforge.plantuml', name: 'plantuml', version: '1.2021.1'
+}
+
+def compile(type) {
+  def sources = fileTree(include:['**/*.puml'], dir:"src").collect()
+  sources
+      .each { f ->
+        def rel = f.absolutePath
+            .replace(project.projectDir.absolutePath, '')
+            .replace('/src/', '')
+        def dest = "${project.buildDir}/${f.parent.replace(project.projectDir.absolutePath, '').replace('/src/', '')}"
+        file(dest).mkdirs()
+        println rel
+        javaexec {
+          classpath sourceSets.main.runtimeClasspath
+          workingDir f.parentFile
+          main = 'net.sourceforge.plantuml.Run'
+          args = ['-o', dest, "-t${type}", f.name]
+        }
+      }
+}
+
+task png() {
+  doLast {
+    compile('png')
+  }
+}
+
+task svg() {
+  doLast {
+    compile('svg')
+  }
+}
+
+task stdlib(type: JavaExec) {
+  classpath sourceSets.main.runtimeClasspath
+  workingDir project.buildDir
+  main = 'net.sourceforge.plantuml.Run'
+  args = ['-extractstdlib']
+}
